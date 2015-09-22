@@ -1,26 +1,11 @@
 module Buoy where
 
 
-import Array exposing
-  ( Array
-  , get
-  , length
-  , slice
-  )
+import Array exposing (Array, get, length)
 import Maybe exposing (andThen)
-import Graphics.Element exposing
-  ( Element
-  , show
-  )
+import Graphics.Element exposing (Element)
 import Http
-import Json.Decode exposing
-  ( Decoder
-  , (:=)
-  , array
-  , decodeString
-  , float
-  , tuple6
-  )
+import Json.Decode exposing (Decoder, (:=), array, float, tuple6)
 
 
 type alias Weather =
@@ -33,17 +18,7 @@ type alias Weather =
   }
 
 
-display : String -> Element
-display txt = case decodeString buoy txt of
-  Ok val ->
-    case lastElement val of
-      Nothing -> show "Empty weather data"
-      Just x -> show x
-  Err e -> show "Couldn't decode weather data"
-
-
-lastElement : Array a -> Maybe a
-lastElement arr = get (length arr - 1) arr
+-- Decoders
 
 
 buoy : Decoder (Array Weather)
