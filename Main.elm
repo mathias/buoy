@@ -1,7 +1,6 @@
 module Main where
 
 
-import Array exposing (Array)
 import Graphics.Element exposing (Element, show)
 import Http exposing (Error(..))
 import Signal exposing (Mailbox, send)
@@ -21,18 +20,18 @@ main : Signal Element
 main = Signal.map display results.signal
 
 
-display : Result Error (Array Weather) -> Element
+display : Result Error Weather -> Element
 display resp =
   case resp of
     Err e -> show e
     Ok v -> show v
 
 
-fetchWeather : Task Error (Array Weather)
+fetchWeather : Task Error Weather
 fetchWeather = Http.get buoy url
 
 
-results : Mailbox (Result Error (Array Weather))
+results : Mailbox (Result Error Weather)
 results =
   Signal.mailbox (Err NetworkError)
 

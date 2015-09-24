@@ -1,34 +1,65 @@
 module Buoy where
 
 
-import Array exposing (Array, get, length)
-import Maybe exposing (andThen)
+import Date exposing (Date, fromTime)
 import Graphics.Element exposing (Element)
-import Http
-import Json.Decode exposing (Decoder, (:=), array, float, tuple6)
+import Json.Decode exposing
+  ( Decoder
+  , (:=)
+  , andThen
+  , float
+  , object6
+  , string
+  , succeed
+  )
 
 
 type alias Weather =
-  { airTemp : Float
-  , dewpoint : Float
-  , relativeHumidity : Float
-  , windDir : Float
-  , windSpeed : Float
-  , windGust : Float
+  { timestampSecs : Date
+  , windSustainMetersPerSec : Float
+  , windGustMetersPerSec : Float
+  , windDirectionDegrees : Float
+  , waterTempCelsius : Float
+  , flagColor : Flag
   }
+
+
+type Flag
+  = Green
+  | GreenYellow
+  | Blue
+  | BlueYellow
+  | BlueRed
+  | Red
+  | Offline
 
 
 -- Decoders
 
 
-buoy : Decoder (Array Weather)
-buoy = "data" := weatherData
+buoy : Decoder Weather
+buoy = object6 Weather
+  ("timestampSecs" := float `andThen` (fromTime >> succeed))
+  ("windSustainMetersPerSec" := float)
+  ("windGustMetersPerSec" := float)
+  ("windDirectionDegrees" := float)
+  ("waterTempCelsius" := float)
+  flagColor
 
 
-weatherData : Decoder (Array Weather)
-weatherData = array weather
+flagColor : Decoder Flag
+flagColor =
+  "flagColor" := string
+    `andThen` recognizeFlag
 
 
-weather : Decoder Weather
-weather =
-  tuple6 Weather float float float float float float
+recognizeFlag : String -> Decoder Flag
+recognizeFlag flag =
+  succeed <| case flag of
+    "green" -> Green
+    "green-yellow" -> GreenYellow
+    "blue" -> Blue
+    "blue-yellow" -> BlueYellow
+    "blue-red" -> BlueRed
+    "red" -> Red
+    _ -> Offline
